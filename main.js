@@ -1,7 +1,7 @@
 // main.js
 
 // 1. Initialize State
-let cart = [];
+const cart = loadCart();
 
 // 2. Select DOM Elements
 const productGrid = document.getElementById('product-grid');
@@ -59,16 +59,72 @@ function createProductCard(product) {
 
 // 4. Add to Cart Function
 function addToCart(productId) {
-    // TODO: Find product by id
-    // TODO: Add to cart array
-    // TODO: Update cart count UI
-    // TODO: Save to localStorage
+    // find product by id, if not exit
+    const targetProduct = products.find(product => product.id === productId);
+    if (!targetProduct) {return;}
+
+    // add to cart array
+    cart.push(targetProduct);
+
+    //save to localstorage
+    saveCart();
+    // update cart count
+    updateCartCount()
+    showCartToast(`${targetProduct.name} added to shopping cart`);
 }
 
 // 5. Update Cart Count UI
 function updateCartCount() {
-    // TODO: Set textContent of cartCount
-    // TODO: Show/hide cartCount based on items
+    // set textcontent of cartcount, show only if items are there
+    if (cartCount) {
+        cartCount.textContent = cart.length;
+        console.log(cartCount.textContent);
+    }
+}
+
+function loadCart() {
+    try {
+        // get saved cart
+        const savedCart = localStorage.getItem("cart");
+        // if saved cart is found, parse it, else create empty array
+        const parsedCart = savedCart ? JSON.parse(savedCart) : [];
+        // return parsed, saved cart if found, otherwise return empty array
+        return Array.isArray(parsedCart) ? parsedCart : [];
+    } catch (e) {
+        console.warn("Could not initialize cart: ", e)
+        // double fail check, returns empty array if error found
+        return [];
+    }
+}
+
+function saveCart() {
+    try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (e) {
+        console.warn("Could not save cart", e);
+    }
+}
+
+function showCartToast(message) {
+    // create/show toast on add/delete
+    const cartToast = document.createElement("div");
+    cartToast.textContent = message;
+    cartToast.setAttribute("role", "status");
+    cartToast.className = "fixed bottom-6 right-6 z-100 rounded-xl bg-slate-500 px-5 py-3 text-m font-semibold" +
+        " text-white shadow-lg opacity-0 translate-y-2 transition-all duration-500";
+
+    document.body.appendChild(cartToast);
+
+    //fade in
+    requestAnimationFrame(() => {
+        cartToast.classList.remove("opacity-0", "translate-y-2");
+    })
+
+    //fade out + remove
+    setTimeout(() => {
+        cartToast.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => cartToast.remove(), 300);
+    }, 3000);
 }
 
 // gather all checked categories to filter for
@@ -133,8 +189,10 @@ categoryFilters.forEach(filter => {
 
 // 7. Initial Load
 document.addEventListener('DOMContentLoaded', () => {
-    // TODO: Load cart from localStorage
-    // TODO: Update cart count UI
-    // TODO: Render all products initially
+    // load cart from local storage
+    loadCart();
+    // update cart count
+    updateCartCount();
+    // render all products
     renderProducts(products);
 });
