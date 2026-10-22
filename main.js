@@ -105,15 +105,25 @@ function saveCart() {
     }
 }
 
+const toastContainer = document.createElement('div');
+toastContainer.className = "fixed bottom-6 right-6 z-100 flex flex-col gap-2 items-end pointer-events-none";
+toastContainer.setAttribute("aria-live", "polite");
+document.body.appendChild(toastContainer);
+const MAX_TOASTS = 5;
+
 function showCartToast(message) {
+    // if toasts move over max count, remove first entry (top of visual stack)
+    while (toastContainer.children.length >= MAX_TOASTS) {
+        toastContainer.firstElementChild.remove();
+    }
+
     // create/show toast on add/delete
     const cartToast = document.createElement("div");
     cartToast.textContent = message;
-    cartToast.setAttribute("role", "status");
-    cartToast.className = "fixed bottom-6 right-6 z-100 rounded-xl bg-slate-500 px-5 py-3 text-m font-semibold" +
+    cartToast.className = "rounded-xl bg-slate-900 px-5 py-3 text-m font-semibold" +
         " text-white shadow-lg opacity-0 translate-y-2 transition-all duration-500";
 
-    document.body.appendChild(cartToast);
+    toastContainer.appendChild(cartToast);
 
     //fade in
     requestAnimationFrame(() => {
@@ -123,7 +133,7 @@ function showCartToast(message) {
     //fade out + remove
     setTimeout(() => {
         cartToast.classList.add("opacity-0", "translate-y-2");
-        setTimeout(() => cartToast.remove(), 300);
+        setTimeout(() => cartToast.remove(), 500);
     }, 3000);
 }
 
