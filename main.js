@@ -77,7 +77,7 @@ function addToCart(productId) {
 function updateCartCount() {
     // set textcontent of cartcount, show only if items are there
     if (cartCount) {
-        cartCount.textContent = cart.length;
+        cartCount.textContent = cart.length.toString();
         console.log(cartCount.textContent);
     }
 }
