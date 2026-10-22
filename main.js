@@ -78,17 +78,26 @@ function getCheckedCategories() {
         .map((checkbox) => checkbox.value)
 }
 
-function applyCheckedFilters() {
+// applies both category filters and search input filters for them to work in unison
+function applyAllFilters() {
     const checkedCategories = getCheckedCategories();
+    const searchQuery = searchInput.value.trim().toLowerCase();
 
-    // if nothing selected to filter, revert back to check all categories
-    if (!checkedCategories.length) {
-        allCheckbox.checked = true;
-        renderProducts(products);
-        return;
-    }
+    //combined filter
+    const filter = products.filter(product => {
 
-    const filter = products.filter(product => checkedCategories.includes(product.category));
+        //filter by category first, if nothing checked (all categories checked auto) match all
+        const categoryFilter = checkedCategories.length === 0 || checkedCategories.includes(product.category);
+
+        //filter by search query, if empty match all - description not included in products.js setup, added in case
+        const queryFilter =
+            searchQuery === "" ||
+            product.name.toLowerCase().includes(searchQuery) ||
+            (product.description || "").toLowerCase().includes(searchQuery);
+
+        //return what is matched by both filters
+        return categoryFilter && queryFilter;
+        });
     renderProducts(filter);
 }
 
@@ -96,7 +105,7 @@ function applyCheckedFilters() {
 // Search
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-        // TODO: Filter products by name or description
+        applyAllFilters()
     });
 }
 
@@ -113,7 +122,12 @@ categoryFilters.forEach(filter => {
         } else if (filter !== allCheckbox && filter.checked) {
             allCheckbox.checked = false;
         }
-        applyCheckedFilters();
+        // if no checked categories to filter, revert back to check all
+        if (getCheckedCategories().length === 0) {
+            allCheckbox.checked = true;
+        }
+
+        applyAllFilters();
     });
 });
 
